@@ -16,242 +16,115 @@ public partial class MyDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Tblcategory> Tblcategories { get; set; }
+    public virtual DbSet<__EFMigrationsHistory> __EFMigrationsHistories { get; set; }
 
-    public virtual DbSet<Tblorder> Tblorders { get; set; }
+    public virtual DbSet<category> categories { get; set; }
 
-    public virtual DbSet<Tblorderdetail> Tblorderdetails { get; set; }
+    public virtual DbSet<order> orders { get; set; }
 
-    public virtual DbSet<Tblproduct> Tblproducts { get; set; }
+    public virtual DbSet<orderdetail> orderdetails { get; set; }
 
-    public virtual DbSet<Tblproductattribute> Tblproductattributes { get; set; }
+    public virtual DbSet<product> products { get; set; }
 
-    public virtual DbSet<Tblproductimage> Tblproductimages { get; set; }
+    public virtual DbSet<product_image> product_images { get; set; }
 
-    public virtual DbSet<Tbluser>  Tblusers { get; set; }
+    public virtual DbSet<productattribute> productattributes { get; set; }
 
-    private string GetConnectionString()
-    {
-        // Khởi tạo ConfigurationBuilder và cấu hình tệp appsettings.json
-        IConfiguration config = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory()) // Đặt đường dẫn cơ sở cho tệp cấu hình
-            .AddJsonFile("appsettings.json", optional: false,
-                reloadOnChange: true) // Thêm tệp appsettings.json vào cấu hình
-            .Build(); // Xây dựng đối tượng IConfiguration
+    public virtual DbSet<recommendation_product> recommendation_products { get; set; }
 
-        // Lấy giá trị từ ConnectionStrings trong tệp appsettings.json
-        var strConn = config.GetConnectionString("DefaultConnection");
+    public virtual DbSet<recommendation_type> recommendation_types { get; set; }
 
-        // Trả về chuỗi kết nối
-        return strConn;
-    }
+    public virtual DbSet<user> users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseMySQL(GetConnectionString());
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseMySQL("Server=mysql-189f42b1-lehuyvuok-ac0e.l.aivencloud.com;Port=22626;Database=defaultdb;Uid=avnadmin;Pwd=AVNS_c3ZWGDumzgd6oRFSAr8;SslMode=Required;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Tblcategory>(entity =>
+        modelBuilder.Entity<__EFMigrationsHistory>(entity =>
         {
-            entity.HasKey(e => e.Categoryid).HasName("PRIMARY");
-
-            entity.ToTable("tblcategory");
-
-            entity.Property(e => e.Categoryid).HasColumnName("categoryid");
-            entity.Property(e => e.Categoryname)
-                .HasMaxLength(255)
-                .HasColumnName("categoryname");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp")
-                .HasColumnName("created_at");
+            entity.HasKey(e => e.MigrationId).HasName("PRIMARY");
         });
 
-        modelBuilder.Entity<Tblorder>(entity =>
+        modelBuilder.Entity<category>(entity =>
         {
-            entity.HasKey(e => e.Orderid).HasName("PRIMARY");
-
-            entity.ToTable("tblorder");
-
-            entity.HasIndex(e => e.Userid, "userid");
-
-            entity.Property(e => e.Orderid).HasColumnName("orderid");
-            entity.Property(e => e.Orderdate)
-                .HasColumnType("timestamp")
-                .HasColumnName("orderdate");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .HasColumnName("status");
-            entity.Property(e => e.Total)
-                .HasPrecision(10)
-                .HasColumnName("total");
-            entity.Property(e => e.Userid).HasColumnName("userid");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Tblorders)
-                .HasForeignKey(d => d.Userid)
-                .HasConstraintName("tblorder_ibfk_1");
+            entity.HasKey(e => e.categoryid).HasName("PRIMARY");
         });
 
-        modelBuilder.Entity<Tblorderdetail>(entity =>
+        modelBuilder.Entity<order>(entity =>
         {
-            entity.HasKey(e => e.Detailid).HasName("PRIMARY");
+            entity.HasKey(e => e.orderid).HasName("PRIMARY");
 
-            entity.ToTable("tblorderdetail");
-
-            entity.HasIndex(e => e.Orderid, "orderid");
-
-            entity.HasIndex(e => e.Productid, "productid");
-
-            entity.Property(e => e.Detailid).HasColumnName("detailid");
-            entity.Property(e => e.Orderid).HasColumnName("orderid");
-            entity.Property(e => e.Price)
-                .HasPrecision(10)
-                .HasColumnName("price");
-            entity.Property(e => e.Productid).HasColumnName("productid");
-            entity.Property(e => e.Quantity).HasColumnName("quantity");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .HasColumnName("status");
-
-            entity.HasOne(d => d.Order).WithMany(p => p.Tblorderdetails)
-                .HasForeignKey(d => d.Orderid)
-                .HasConstraintName("tblorderdetail_ibfk_1");
-
-            entity.HasOne(d => d.Product).WithMany(p => p.Tblorderdetails)
-                .HasForeignKey(d => d.Productid)
-                .HasConstraintName("tblorderdetail_ibfk_2");
+            entity.Property(e => e.orderdate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.status).HasDefaultValueSql("'Processing'");
         });
 
-        modelBuilder.Entity<Tblproduct>(entity =>
+        modelBuilder.Entity<orderdetail>(entity =>
         {
-            entity.HasKey(e => e.Productid).HasName("PRIMARY");
+            entity.HasKey(e => e.detailid).HasName("PRIMARY");
 
-            entity.ToTable("tblproduct");
+            entity.Property(e => e.status).HasDefaultValueSql("'Processing'");
 
-            entity.HasIndex(e => e.Categoryid, "categoryid");
+            entity.HasOne(d => d.order).WithMany(p => p.orderdetails)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_orderdetail_order");
 
-            entity.Property(e => e.Productid).HasColumnName("productid");
-            entity.Property(e => e.Brand)
-                .HasMaxLength(100)
-                .HasColumnName("brand");
-            entity.Property(e => e.Categoryid).HasColumnName("categoryid");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp")
-                .HasColumnName("created_at");
-            entity.Property(e => e.DiscountPercent).HasColumnName("discount_percent");
-            entity.Property(e => e.DiscountPrice)
-                .HasPrecision(10)
-                .HasColumnName("discount_price");
-            entity.Property(e => e.FlashSale).HasColumnName("flash_sale");
-            entity.Property(e => e.Image)
-                .HasColumnType("text")
-                .HasColumnName("image");
-            entity.Property(e => e.Importdate)
-                .HasColumnType("date")
-                .HasColumnName("importdate");
-            entity.Property(e => e.IsAvailable).HasColumnName("is_available");
-            entity.Property(e => e.Price)
-                .HasPrecision(10)
-                .HasColumnName("price");
-            entity.Property(e => e.Productname)
-                .HasMaxLength(255)
-                .HasColumnName("productname");
-            entity.Property(e => e.Quantity).HasColumnName("quantity");
-            entity.Property(e => e.RatingAvg)
-                .HasColumnType("float(5,2)")
-                .HasColumnName("rating_avg");
-            entity.Property(e => e.RatingCount).HasColumnName("rating_count");
-            entity.Property(e => e.Recommendation)
-                .HasMaxLength(255)
-                .HasColumnName("recommendation");
-            entity.Property(e => e.Sku)
-                .HasMaxLength(50)
-                .HasColumnName("sku");
-            entity.Property(e => e.SoldQuantity).HasColumnName("sold_quantity");
-            entity.Property(e => e.Status).HasColumnName("status");
-            entity.Property(e => e.StockQuantity).HasColumnName("stock_quantity");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("timestamp")
-                .HasColumnName("updated_at");
-            entity.Property(e => e.Usingdate)
-                .HasColumnType("date")
-                .HasColumnName("usingdate");
-
-            entity.HasOne(d => d.Category).WithMany(p => p.Tblproducts)
-                .HasForeignKey(d => d.Categoryid)
-                .HasConstraintName("tblproduct_ibfk_1");
+            entity.HasOne(d => d.product).WithMany(p => p.orderdetails)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_orderdetail_product");
         });
 
-        modelBuilder.Entity<Tblproductattribute>(entity =>
+        modelBuilder.Entity<product>(entity =>
         {
-            entity.HasKey(e => e.Attributeid).HasName("PRIMARY");
+            entity.HasKey(e => e.productid).HasName("PRIMARY");
 
-            entity.ToTable("tblproductattribute");
-
-            entity.HasIndex(e => e.Productid, "productid");
-
-            entity.Property(e => e.Attributeid).HasColumnName("attributeid");
-            entity.Property(e => e.AttributeName)
-                .HasMaxLength(255)
-                .HasColumnName("attribute_name");
-            entity.Property(e => e.AttributeValue)
-                .HasMaxLength(255)
-                .HasColumnName("attribute_value");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp")
-                .HasColumnName("created_at");
-            entity.Property(e => e.Productid).HasColumnName("productid");
-
-            entity.HasOne(d => d.Product).WithMany(p => p.Tblproductattributes)
-                .HasForeignKey(d => d.Productid)
-                .HasConstraintName("tblproductattribute_ibfk_1");
+            entity.HasOne(d => d.category).WithMany(p => p.products).HasConstraintName("product_ibfk_1");
         });
 
-        modelBuilder.Entity<Tblproductimage>(entity =>
+        modelBuilder.Entity<product_image>(entity =>
         {
-            entity.HasKey(e => e.Imageid).HasName("PRIMARY");
+            entity.HasKey(e => e.imageid).HasName("PRIMARY");
 
-            entity.ToTable("tblproductimage");
+            entity.Property(e => e.created_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            entity.HasIndex(e => e.Productid, "productid");
-
-            entity.Property(e => e.Imageid).HasColumnName("imageid");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp")
-                .HasColumnName("created_at");
-            entity.Property(e => e.ImageUrl)
-                .HasColumnType("text")
-                .HasColumnName("image_url");
-            entity.Property(e => e.Productid).HasColumnName("productid");
-
-            entity.HasOne(d => d.Product).WithMany(p => p.Tblproductimages)
-                .HasForeignKey(d => d.Productid)
-                .HasConstraintName("tblproductimage_ibfk_1");
+            entity.HasOne(d => d.product).WithMany(p => p.product_images)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("product_image_ibfk_1");
         });
 
-        modelBuilder.Entity<Tbluser>(entity =>
+        modelBuilder.Entity<productattribute>(entity =>
         {
-            entity.HasKey(e => e.Userid).HasName("PRIMARY");
+            entity.HasKey(e => e.attributeid).HasName("PRIMARY");
 
-            entity.ToTable("tblusers");
+            entity.HasOne(d => d.product).WithMany(p => p.productattributes).HasConstraintName("productattribute_ibfk_1");
+        });
 
-            entity.Property(e => e.Userid).HasColumnName("userid");
-            entity.Property(e => e.Address)
-                .HasMaxLength(255)
-                .HasColumnName("address");
-            entity.Property(e => e.Birthday)
-                .HasColumnType("date")
-                .HasColumnName("birthday");
-            entity.Property(e => e.Fullname)
-                .HasMaxLength(255)
-                .HasColumnName("fullname");
-            entity.Property(e => e.Password)
-                .HasMaxLength(255)
-                .HasColumnName("password");
-            entity.Property(e => e.Phone)
-                .HasMaxLength(20)
-                .HasColumnName("phone");
-            entity.Property(e => e.Roleid).HasColumnName("roleid");
-            entity.Property(e => e.Status).HasColumnName("status");
+        modelBuilder.Entity<recommendation_product>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("PRIMARY");
+
+            entity.Property(e => e.created_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(d => d.product).WithMany(p => p.recommendation_products)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("recommendation_product_ibfk_2");
+
+            entity.HasOne(d => d.recommendation_type).WithMany(p => p.recommendation_products)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("recommendation_product_ibfk_1");
+        });
+
+        modelBuilder.Entity<recommendation_type>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("PRIMARY");
+
+            entity.Property(e => e.created_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<user>(entity =>
+        {
+            entity.HasKey(e => e.userid).HasName("PRIMARY");
         });
 
         OnModelCreatingPartial(modelBuilder);

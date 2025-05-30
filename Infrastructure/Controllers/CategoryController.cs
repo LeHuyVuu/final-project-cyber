@@ -12,33 +12,35 @@ namespace cybersoft_final_project.Controllers
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly MyDbContext _context = new MyDbContext();
+        private readonly MyDbContext _context;
+
+        public CategoryController(MyDbContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
 
         // GET: api/category (with pagination and sorting)
         [HttpGet]
         public async Task<IActionResult> GetCategories(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
-            [FromQuery] string? sortBy = "Categoryid",
+            [FromQuery] string? sortBy = "categoryid",
             [FromQuery] string? sortOrder = "asc")
         {
             try
             {
-                var query = _context.Tblcategories.AsQueryable();
-                // Note: If Status field exists, add .Where(c => c.Status == true)
+                var query = _context.categories.AsQueryable();
 
-                // Apply sorting using LINQ with switch expression
                 query = sortBy?.ToLower() switch
                 {
                     "categoryname" => sortOrder?.ToLower() == "desc"
-                        ? query.OrderByDescending(c => c.Categoryname)
-                        : query.OrderBy(c => c.Categoryname),
+                        ? query.OrderByDescending(c => c.categoryname)
+                        : query.OrderBy(c => c.categoryname),
                     _ => sortOrder?.ToLower() == "desc"
-                        ? query.OrderByDescending(c => c.Categoryid)
-                        : query.OrderBy(c => c.Categoryid)
+                        ? query.OrderByDescending(c => c.categoryid)
+                        : query.OrderBy(c => c.categoryid)
                 };
 
-                // Apply pagination
                 var totalItems = await query.CountAsync();
                 var categories = await query
                     .Skip((page - 1) * pageSize)
@@ -73,16 +75,15 @@ namespace cybersoft_final_project.Controllers
         {
             try
             {
-                var category = await _context.Tblcategories
-                    .FirstOrDefaultAsync(c => c.Categoryid == id);
-                    // Note: If Status field exists, add && c.Status == true
+                var category = await _context.categories
+                    .FirstOrDefaultAsync(c => c.categoryid == id);
 
                 if (category == null)
                 {
                     return NotFound(HTTPResponse<object>.Response(404, $"Category with ID {id} not found.", null));
                 }
 
-                return Ok(HTTPResponse<Tblcategory>.Response(200, "Category retrieved successfully.", category));
+                return Ok(HTTPResponse<category>.Response(200, "Category retrieved successfully.", category));
             }
             catch (Exception ex)
             {
@@ -92,34 +93,29 @@ namespace cybersoft_final_project.Controllers
 
         // POST: api/category
         [HttpPost]
-        public async Task<IActionResult> CreateCategory([FromBody] Tblcategory newCategory)
+        public async Task<IActionResult> CreateCategory([FromBody] category newCategory)
         {
             try
             {
-                if (newCategory == null || string.IsNullOrEmpty(newCategory.Categoryname))
+                if (newCategory == null || string.IsNullOrEmpty(newCategory.categoryname))
                 {
                     return BadRequest(HTTPResponse<object>.Response(400, "Invalid category data.", null));
                 }
 
-                // Check if category name already exists
-                var existingCategory = await _context.Tblcategories
-                    .AnyAsync(c => c.Categoryname == newCategory.Categoryname);
-                    // Note: If Status field exists, add && c.Status == true
+                var existingCategory = await _context.categories
+                    .AnyAsync(c => c.categoryname == newCategory.categoryname);
                 if (existingCategory)
                 {
                     return BadRequest(HTTPResponse<object>.Response(400, "Category name already exists.", null));
                 }
 
-                newCategory.CreatedAt = DateTime.Now;
-                // Note: If Status and UpdatedAt fields exist, set:
-                // newCategory.Status = true;
-                // newCategory.UpdatedAt = DateTime.Now;
+                newCategory.created_at = DateTime.Now;
 
-                _context.Tblcategories.Add(newCategory);
+                _context.categories.Add(newCategory);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetCategory), new { id = newCategory.Categoryid },
-                    HTTPResponse<Tblcategory>.Response(201, "Category created successfully.", newCategory));
+                return CreatedAtAction(nameof(GetCategory), new { id = newCategory.categoryid },
+                    HTTPResponse<category>.Response(201, "Category created successfully.", newCategory));
             }
             catch (Exception ex)
             {
@@ -129,39 +125,33 @@ namespace cybersoft_final_project.Controllers
 
         // PUT: api/category/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody] Tblcategory updatedCategory)
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] category updatedCategory)
         {
             try
             {
-                if (updatedCategory == null || id != updatedCategory.Categoryid || string.IsNullOrEmpty(updatedCategory.Categoryname))
+                if (updatedCategory == null || id != updatedCategory.categoryid || string.IsNullOrEmpty(updatedCategory.categoryname))
                 {
                     return BadRequest(HTTPResponse<object>.Response(400, "Invalid category data or ID mismatch.", null));
                 }
 
-                var category = await _context.Tblcategories.FindAsync(id);
+                var category = await _context.categories.FindAsync(id);
                 if (category == null)
                 {
                     return NotFound(HTTPResponse<object>.Response(404, $"Category with ID {id} not found.", null));
                 }
 
-                // Check if updated category name already exists (excluding current category)
-                var existingCategory = await _context.Tblcategories
-                    .AnyAsync(c => c.Categoryname == updatedCategory.Categoryname && c.Categoryid != id);
-                    // Note: If Status field exists, add && c.Status == true
+                var existingCategory = await _context.categories
+                    .AnyAsync(c => c.categoryname == updatedCategory.categoryname && c.categoryid != id);
                 if (existingCategory)
                 {
                     return BadRequest(HTTPResponse<object>.Response(400, "Category name already exists.", null));
                 }
 
-                // Update properties
-                category.Categoryname = updatedCategory.Categoryname;
-                // Note: If UpdatedAt field exists, set:
-                // category.UpdatedAt = DateTime.Now;
+                category.categoryname = updatedCategory.categoryname;
 
-                _context.Entry(category).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
-                return Ok(HTTPResponse<Tblcategory>.Response(200, "Category updated successfully.", category));
+                return Ok(HTTPResponse<category>.Response(200, "Category updated successfully.", category));
             }
             catch (Exception ex)
             {
@@ -175,30 +165,23 @@ namespace cybersoft_final_project.Controllers
         {
             try
             {
-                var category = await _context.Tblcategories.FindAsync(id);
+                var category = await _context.categories.FindAsync(id);
 
                 if (category == null)
                 {
                     return NotFound(HTTPResponse<object>.Response(404, $"Category with ID {id} not found.", null));
                 }
 
-                // Check if category has associated products
-                var hasProducts = await _context.Tblproducts.AnyAsync(p => p.Categoryid == id);
-                // Note: If Status field exists in Tblproduct, add && p.Status == true
+                var hasProducts = await _context.products.AnyAsync(p => p.categoryid == id);
                 if (hasProducts)
                 {
                     return BadRequest(HTTPResponse<object>.Response(400, "Cannot delete category with associated products.", null));
                 }
 
-                // Note: If Status and UpdatedAt fields exist, use soft delete:
-                // category.Status = false;
-                // category.UpdatedAt = DateTime.Now;
-                // await _context.SaveChangesAsync();
-                // For now, perform hard delete since Status is not available
-                _context.Tblcategories.Remove(category);
+                _context.categories.Remove(category);
                 await _context.SaveChangesAsync();
 
-                return Ok(HTTPResponse<Tblcategory>.Response(200, "Category deleted successfully.", category));
+                return Ok(HTTPResponse<category>.Response(200, "Category deleted successfully.", category));
             }
             catch (Exception ex)
             {
