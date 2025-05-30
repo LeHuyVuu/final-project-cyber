@@ -18,6 +18,10 @@ jobs:
     - name: Save image as tarball
       run: docker save cybersoft-final-project > image.tar
 
+    - name: Check files before SCP
+      run: |
+        ls -l image.tar Dockerfile
+
     - name: Copy files to VPS
       uses: appleboy/scp-action@v0.1.5
       with:
