@@ -1,6 +1,6 @@
 ﻿using cybersoft_final_project.Entities;
 using cybersoft_final_project.Infrastructure.UnitOfWork;
-
+using cybersoft_final_project.Models.Request;
 using Microsoft.EntityFrameworkCore;
 
 namespace cybersoft_final_project.Services
@@ -17,7 +17,7 @@ namespace cybersoft_final_project.Services
         public async Task<(List<product>, int)> GetProductsAsync(int page, int pageSize, string sortBy, string sortOrder)
         {
             var query = unit.ProductRepository.GetAllWithIncludes()
-                         .Where(p => p.stock_quantity > 0 && p.status == true); // ✅ Chỉ lấy sản phẩm còn hàng và đang active
+                         .Where(p => p.status == true); // ✅ Chỉ lấy sản phẩm còn hàng và đang active
 
             query = sortBy?.ToLower() switch
             {
@@ -59,33 +59,25 @@ namespace cybersoft_final_project.Services
             return (result, total);
         }
 
-        public async Task<product?> UpdateProductAsync(int id, product updatedProduct)
+        public async Task<product?> UpdateProductAsync(int id, UpdateProductRequest request)
         {
             var existingProduct = await unit.ProductRepository.GetByIdAsync(id);
             if (existingProduct == null) return null;
 
-            existingProduct.productname = updatedProduct.productname;
-            existingProduct.image = updatedProduct.image;
-            existingProduct.price = updatedProduct.price;
-            existingProduct.quantity = updatedProduct.quantity;
-            existingProduct.importdate = updatedProduct.importdate;
-            existingProduct.usingdate = updatedProduct.usingdate;
-            existingProduct.brand = updatedProduct.brand;
-            existingProduct.sku = updatedProduct.sku;
-            existingProduct.discount_price = updatedProduct.discount_price;
-            existingProduct.discount_percent = updatedProduct.discount_percent;
-            existingProduct.stock_quantity = updatedProduct.stock_quantity;
-            existingProduct.sold_quantity = updatedProduct.sold_quantity;
-            existingProduct.is_available = updatedProduct.is_available;
-            existingProduct.rating_avg = updatedProduct.rating_avg;
-            existingProduct.rating_count = updatedProduct.rating_count;
-            existingProduct.categoryid = updatedProduct.categoryid;
-            existingProduct.updated_at = DateTime.Now;
-            existingProduct.status = updatedProduct.status;
+            existingProduct.productname = request.ProductName;
+            existingProduct.image = request.Image;
+            existingProduct.brand = request.Brand;
+            existingProduct.sku = request.Sku;
+            existingProduct.price = request.Price;
+            existingProduct.discount_price = request.DiscountPrice;
+            existingProduct.stock_quantity = request.stock_quantity ?? existingProduct.stock_quantity;
 
+
+            existingProduct.updated_at = DateTime.Now;
             await unit.SaveAsync();
             return existingProduct;
         }
+
 
         public async Task<product?> SoftDeleteProductAsync(int id)
         {

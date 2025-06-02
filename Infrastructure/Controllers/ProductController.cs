@@ -2,6 +2,7 @@
 using cybersoft_final_project.Models;
 using cybersoft_final_project.Services;
 using cybersoft_final_project.Entities;
+using cybersoft_final_project.Models.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -13,7 +14,7 @@ namespace cybersoft_final_project.Controllers;
 public class ProductsController(ProductService service) : ControllerBase
 {
     [HttpGet]
-    [OutputCache]
+    [OutputCache(Duration = 60, VaryByQueryKeys = ["page", "pageSize", "sortBy", "sortOrder"])]
     public async Task<IActionResult> GetProducts(int page = 1, int pageSize = 10, string? sortBy = "productid",
         string? sortOrder = "asc")
     {
@@ -34,6 +35,7 @@ public class ProductsController(ProductService service) : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [OutputCache(Duration = 60, VaryByRouteValueNames = ["id"])]
     public async Task<IActionResult> GetProduct(int id)
     {
         var product = await service.GetProductByIdAsync(id);
@@ -44,6 +46,7 @@ public class ProductsController(ProductService service) : ControllerBase
     }
 
     [HttpGet("category/{categoryId}")]
+    [OutputCache(Duration = 60, VaryByRouteValueNames = ["categoryId"], VaryByQueryKeys = ["page", "pageSize", "sortBy", "sortOrder"])]
     public async Task<IActionResult> GetProductsByCategory(int categoryId, int page = 1, int pageSize = 10,
         string? sortBy = "productid", string? sortOrder = "asc")
     {
@@ -66,12 +69,12 @@ public class ProductsController(ProductService service) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduct(int id, [FromBody] product updatedProduct)
+    public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductRequest request)
     {
-        if (updatedProduct == null || id != updatedProduct.productid)
+        if (request == null || id != request.ProductId)
             return BadRequest(HTTPResponse<object>.Response(400, "Invalid product data or ID mismatch.", null));
 
-        var product = await service.UpdateProductAsync(id, updatedProduct);
+        var product = await service.UpdateProductAsync(id, request);
         if (product == null)
             return NotFound(HTTPResponse<object>.Response(404, $"Product with ID {id} not found.", null));
 
@@ -89,6 +92,7 @@ public class ProductsController(ProductService service) : ControllerBase
     }
 
     [HttpGet("/product/{slugName}")]
+    [OutputCache(Duration = 60, VaryByRouteValueNames = ["slugName"])]
     public IActionResult GetProductDetailsWithRecommendations(string slugName)
     {
         var recommendationType = service.GetRecommendationType(slugName);
@@ -105,6 +109,8 @@ public class ProductsController(ProductService service) : ControllerBase
 
 
     [HttpGet("sale")]
+
+
     public async Task<IActionResult> GetProductsOnSale(
         int page = 1,
         int pageSize = 10,

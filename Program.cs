@@ -79,6 +79,13 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<StatisticsService>();
+builder.Services.AddSingleton<PayPalClient>();
+builder.Services.AddScoped<PaymentService>();
+
+builder.Services.AddOutputCache(options =>
+{
+    options.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(5);
+});
 
 
 // Authentication + xử lý lỗi không có token

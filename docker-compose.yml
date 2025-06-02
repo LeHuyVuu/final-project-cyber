@@ -1,0 +1,14 @@
+﻿version: '3.8'
+
+services:
+  web:
+    container_name: cybersoft-api
+    image: cybersoft-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+    env_file:
+      - .env
+    restart: always
