@@ -64,7 +64,7 @@ out/
 
 # Local Azure Functions settings
 local.settings.json
-appsettings.json 
+
 
 # Others
 *.swp
