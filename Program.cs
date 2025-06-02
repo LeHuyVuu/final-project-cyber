@@ -87,6 +87,7 @@ builder.Services.AddOutputCache(options =>
     options.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(5);
 });
 
+builder.WebHost.UseUrls("http://0.0.0.0:80");
 
 // Authentication + xử lý lỗi không có token
 builder.Services.AddAuthentication("Bearer")
@@ -132,14 +133,12 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Middleware pipeline
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
 
-app.UseHttpsRedirection();
+
+
 app.UseCors("CorsPolicy");
 
 app.UseAuthentication(); // ✅ Trước Authorization
