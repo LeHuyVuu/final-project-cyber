@@ -24,13 +24,20 @@ public class OrderRepository
         await _context.orderdetails.AddAsync(detail);
     }
     
-    public async Task<IEnumerable<order>> GetAllAsync()
+    public async Task<IEnumerable<order>> GetAllAsync(Func<IQueryable<order>, IQueryable<order>>? queryShaper = null)
     {
-        return await _context.orders
+        IQueryable<order> query = _context.orders
             .Include(o => o.orderdetails)
-            .ThenInclude(od => od.product) // Thêm dòng này để lấy luôn product trong mỗi orderdetail
-            .ToListAsync();
+            .ThenInclude(od => od.product);
+
+        if (queryShaper != null)
+        {
+            query = queryShaper(query);
+        }
+
+        return await query.ToListAsync();
     }
+
 
 
     public async Task<order?> GetByIdAsync(int id)

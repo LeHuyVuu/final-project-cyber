@@ -62,9 +62,11 @@ public class OrderService
     
     public async Task<IEnumerable<order>> GetAllOrdersAsync()
     {
-        return await _unitOfWork.OrderRepository.GetAllAsync();
+        return await _unitOfWork.OrderRepository.GetAllAsync(
+            q => q.OrderByDescending(o => o.orderdate));
     }
 
+    
     public async Task<order?> GetOrderByIdAsync(int id)
     {
         return await _unitOfWork.OrderRepository.GetByIdAsync(id);

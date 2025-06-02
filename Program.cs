@@ -60,11 +60,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
     {
-        builder.WithOrigins("http://localhost:3000", "http://localhost:44376")
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
     });
 });
+
 
 // DbContext
 builder.Services.AddDbContext<MyDbContext>();
@@ -82,10 +84,7 @@ builder.Services.AddScoped<StatisticsService>();
 builder.Services.AddSingleton<PayPalClient>();
 builder.Services.AddScoped<PaymentService>();
 
-builder.Services.AddOutputCache(options =>
-{
-    options.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(5);
-});
+builder.Services.AddOutputCache(options => { options.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(5); });
 
 builder.WebHost.UseUrls("http://0.0.0.0:80");
 
@@ -134,9 +133,8 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
-
+app.UseSwagger();
+app.UseSwaggerUI();
 
 
 app.UseCors("CorsPolicy");
