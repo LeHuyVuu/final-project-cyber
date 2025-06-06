@@ -10,18 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Bước 1: Checkout source
       - name: Checkout source
         uses: actions/checkout@v3
 
+      # Bước 2: Setup .NET 8
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
+      # Bước 3: Publish .NET app ra thư mục out/
       - name: Publish .NET project
         run: dotnet publish -c Release -o out
 
-      # Xóa source cũ trên VPS
+      # Bước 4: Debug - liệt kê file/folder đang có
+      - name: List workspace content
+        run: |
+          echo "Root:"
+          ls -al
+          echo "out folder:"
+          ls -al out
+
+      # Bước 5: Clean source cũ trên VPS
       - name: Clean old source on VPS
         uses: appleboy/ssh-action@master
         with:
@@ -32,7 +43,7 @@ jobs:
           script: |
             rm -rf /var/www/cybersoft-final-project/*
 
-      # Copy source code, Dockerfile, docker-compose.yml,... lên VPS
+      # Bước 6: Copy code, Dockerfile, docker-compose.yml lên VPS
       - name: Copy source code to VPS via SCP
         uses: appleboy/scp-action@master
         with:
@@ -40,15 +51,13 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          # Nếu project ở root, copy hết (bao gồm Dockerfile, docker-compose.yml, folder out/)
           source: |
             out
             Dockerfile
             docker-compose.yml
-            # nếu cần copy thêm folder nào, thêm vào đây
           target: /var/www/cybersoft-final-project
 
-      # Restart docker compose trên VPS
+      # Bước 7: Restart Docker Compose on VPS
       - name: Restart Docker Compose on VPS
         uses: appleboy/ssh-action@master
         with:
