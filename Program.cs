@@ -61,13 +61,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("CorsPolicy", builder =>
     {
         builder
-            .WithOrigins("https://final-cyber-frontend.vercel.app")  // Cho phép domain của frontend
+            .AllowAnyOrigin()  // Cho phép tất cả các domain
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();  // Thêm AllowCredentials nếu cần
     });
 });
-
 
 
 // DbContext
