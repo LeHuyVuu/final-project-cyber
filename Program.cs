@@ -55,18 +55,19 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// CORS
+// CORS 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
     {
         builder
-            .AllowAnyOrigin()  // Cho phép tất cả các domain
+            .SetIsOriginAllowed(origin => true) // Cho phép tất cả các origin
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials();  // Thêm AllowCredentials nếu cần
+            .AllowCredentials();
     });
 });
+
 
 
 // DbContext
