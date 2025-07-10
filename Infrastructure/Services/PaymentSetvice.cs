@@ -27,6 +27,7 @@ public class PaymentService
             },
             ApplicationContext = new ApplicationContext
             {
+                // Điều chỉnh returnUrl để bạn có thể tự xử lý sau khi nhận được thông tin từ PayPal
                 ReturnUrl = "http://localhost:3000/step/success",
                 CancelUrl = "http://localhost:3000/"
             }
@@ -38,6 +39,16 @@ public class PaymentService
 
         var response = await _paypal.Client.Execute(request);
         var result = response.Result<Order>();
-        return result.Links.FirstOrDefault(l => l.Rel == "approve")?.Href;
+        var approveLink = result.Links.FirstOrDefault(l => l.Rel == "approve")?.Href;
+
+        // Thay vì trả về approveLink, bạn có thể làm một redirect trực tiếp tới returnUrl sau khi lấy mã token từ PayPal
+        if (approveLink != null)
+        {
+            // Redirect trực tiếp tới trang returnUrl sau khi xử lý
+            // Bạn có thể dùng `HttpContext.Response.Redirect` trong controller hoặc làm như ví dụ dưới
+            return "http://localhost:3000/step/success"; // Redirect tới URL chính mà không có tham số.
+        }
+
+        return null;
     }
 }
