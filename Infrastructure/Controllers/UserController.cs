@@ -58,8 +58,7 @@ public class UserController : ControllerBase
                 if (updatedUser.phone.Length > 20)
                     return BadRequest(HTTPResponse<object>.Response(400, "Phone number exceeds max length.", null));
 
-                if (await _service.PhoneExists(updatedUser.phone, id))
-                    return BadRequest(HTTPResponse<object>.Response(400, "Phone number already exists.", null));
+              
             }
 
             await _service.UpdateUser(user, updatedUser);
