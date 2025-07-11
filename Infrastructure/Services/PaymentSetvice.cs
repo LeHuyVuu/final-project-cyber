@@ -46,7 +46,7 @@ public class PaymentService
         {
             // Redirect trực tiếp tới trang returnUrl sau khi xử lý
             // Bạn có thể dùng `HttpContext.Response.Redirect` trong controller hoặc làm như ví dụ dưới
-            return "http://localhost:3000/step/success"; // Redirect tới URL chính mà không có tham số.
+            return approveLink; // Redirect tới URL chính mà không có tham số.
         }
 
         return null;
