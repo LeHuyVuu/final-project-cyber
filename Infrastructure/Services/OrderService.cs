@@ -66,6 +66,15 @@ public class OrderService
             q => q.OrderByDescending(o => o.orderdate));
     }
 
+    public async Task<IEnumerable<order>> GetOrdersByUserIdAsync(int userId)
+    {
+        // Gọi repository với điều kiện lọc theo userId
+        return await _unitOfWork.OrderRepository.GetAllAsync(
+            // Thêm điều kiện Where để lọc theo UserId
+            q => q.Where(o => o.userid == userId) 
+                .OrderByDescending(o => o.orderdate)
+        );
+    }
     
     public async Task<order?> GetOrderByIdAsync(int id)
     {

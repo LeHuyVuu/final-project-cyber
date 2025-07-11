@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using cybersoft_final_project.Infrastructure.UnitOfWork;
 using cybersoft_final_project.Models;
 using cybersoft_final_project.Models.Request;
@@ -78,5 +79,26 @@ public class OrderController : ControllerBase
             return BadRequest(HTTPResponse<object>.Response(400, result.Message, null));
 
         return Ok(HTTPResponse<object>.Response(200, result.Message, null));
+    }
+    
+    
+    [HttpGet("my-orders")]
+    public async Task<IActionResult> GetOrdersByCurrentUser()
+    {
+        // 2. Lấy UserId từ claim chuẩn của token (cách làm đáng tin cậy)
+        var userIdClaim = User.FindFirst("UserId")?.Value;
+
+        // 3. Kiểm tra và chuyển đổi UserId
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+        {   
+            // Trả về lỗi 401 nếu token không hợp lệ hoặc không chứa UserId
+            return Unauthorized("Token không hợp lệ hoặc không chứa thông tin người dùng.");
+        }
+
+        // 4. Gọi service với userId đã được xác thực
+        var userOrders = await _orderService.GetOrdersByUserIdAsync(userId);
+
+        // 5. Trả về kết quả thành công
+        return Ok(HTTPResponse<object>.Response(200, "Lấy danh sách đơn hàng thành công.", userOrders));
     }
 }
